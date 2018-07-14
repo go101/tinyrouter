@@ -340,7 +340,7 @@ Wildcard:
 }
 
 // Hard limit for number of segments in path.
-const maxSegmentsInPath = 16
+const maxSegmentsInPath = 32
 
 type TinyRouter struct {
 	// First by the number of tokens, then by method.
