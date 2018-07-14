@@ -13,7 +13,7 @@ func main() {
 		f := func(w http.ResponseWriter, req *http.Request) {
 			w.Write([]byte(pattern))
 			w.Write([]byte("   "))
-			params := tiny.ParamsFromRequest(req)
+			params := tiny.PathParams(req)
 			w.Write([]byte(fmt.Sprintf("params: %v\n", params)))
 		}
 		return tiny.Route{Method: method, Pattern: pattern, HandleFunc: f}

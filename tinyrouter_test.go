@@ -30,7 +30,7 @@ func TestTinyRouter(t *testing.T) {
 
 	buildHandler := func(rc routeCase) func(http.ResponseWriter, *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			ps := ParamsFromRequest(r)
+			ps := PathParams(r)
 			params, values := map[string]string{}, []string(nil)
 			for i := 0; i < len(ps.kvs); i += 2 {
 				params[ps.kvs[i]] = ps.kvs[i+1]

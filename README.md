@@ -59,7 +59,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/organizations/:org/members/:member",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "org: %s, member: %s\n", params.Value("org"), params.Value("member"))
 			},
 		},
@@ -67,7 +67,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/organizations/:org/projects/:project",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "org: %s, project: %s\n", params.Value("org"), params.Value("project"))
 			},
 		},
@@ -76,7 +76,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/v1/:name/info",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "info of %s (v1)\n", params.Value("name"))
 			},
 		},
@@ -92,7 +92,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/v2/:name/info",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "info of %s (v2)\n", params.Value("name"))
 			},
 		},
@@ -100,7 +100,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/v2/:group/:item",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "grooup: %s, item: %s\n", params.Value("group"), params.Value("item"))
 			},
 		},
@@ -108,7 +108,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/v2/:id",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "id: %s(v2)\n", params.Value("id"))
 			},
 		},
@@ -125,7 +125,7 @@ func main() {
 			Method: "GET",
 			Pattern: "/:item",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.ParamsFromRequest(req)
+				params := tiny.PathParams(req)
 				fmt.Fprintf(w, "item: %s\n", params.Value("item"))
 			},
 		},

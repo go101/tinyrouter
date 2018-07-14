@@ -54,8 +54,8 @@ func requestWithParams(req *http.Request, kvs []string) *http.Request {
 	return req.WithContext(context.WithValue(req.Context(), paramsContextKey, Params{kvs}))
 }
 
-// ParamsFromRequest returns parameters passed from URL path.
-func ParamsFromRequest(req *http.Request) Params {
+// PathParams returns parameters passed from URL path.
+func PathParams(req *http.Request) Params {
 	p, _ := req.Context().Value(paramsContextKey).(Params)
 	return p
 }
