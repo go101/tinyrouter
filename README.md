@@ -7,7 +7,7 @@ The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to 
 For a long time, Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter)
 is my favorite http router and is used in my many Go projects.
 For most cases, httprouter works very well.
-However, sometimes httprouter is some frustrating for lacking of flexibity.
+However, sometimes httprouter is some frustrating for [lacking of flexibity](https://github.com/julienschmidt/httprouter/search?q=conflicts&type=Issues).
 For example, the following route groups don't work at the same time in httprouter.
 
 ```golang
