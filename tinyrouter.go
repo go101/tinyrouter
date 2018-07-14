@@ -113,7 +113,7 @@ type path struct {
 	raw       string // unparsed pattern
 	next      *path
 	segments  []*segment
-	numParams int // how many
+	numParams int // how many wildcard segments in this path
 	handle    func(http.ResponseWriter, *http.Request)
 }
 
@@ -339,7 +339,7 @@ Wildcard:
 	return findHandlePath(tokens[1:], entrySeg.nextInRow)
 }
 
-// Hard limit for number of segments in path.
+// Hard limit for maximum number of segments in path.
 const maxSegmentsInPath = 32
 
 type TinyRouter struct {
