@@ -8,7 +8,7 @@ For a long time, Julien Schmidt's [httprouter](https://github.com/julienschmidt/
 is my favorite http router and is used in my many Go projects.
 For most cases, httprouter works very well.
 However, sometimes httprouter is some frustrating for lacking of flexibity.
-For example, the following route groups don't work in httprouter.
+For example, the following route groups don't work at the same time in httprouter.
 
 ```golang
 	router := httprouter.New()

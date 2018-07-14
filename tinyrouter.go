@@ -342,7 +342,7 @@ Wildcard:
 // Hard limit for number of segments in path.
 const maxSegmentsInPath = 16
 
-type tinyRouter struct {
+type TinyRouter struct {
 	// First by the number of tokens, then by method.
 	// Used in initialization phase and in dumping.
 	pathsByNumToken [maxSegmentsInPath]map[string][]*path
@@ -357,7 +357,7 @@ type tinyRouter struct {
 	notFoundHandleFunc http.HandlerFunc
 }
 
-// A Config value specifies the properties of a tinyRouter.
+// A Config value specifies the properties of a TinyRouter.
 type Config struct {
 	// This routing table
 	Routes []Route
@@ -383,9 +383,9 @@ type Route struct {
 	HandleFunc      http.HandlerFunc
 }
 
-// New returns *tinyRouter value, which is also a http.Handler value.
-func New(c *Config) *tinyRouter {
-	tr := &tinyRouter{notFoundHandleFunc: c.NotFoundHandleFunc}
+// New returns *TinyRouter value, which is also a http.Handler value.
+func New(c *Config) *TinyRouter {
+	tr := &TinyRouter{notFoundHandleFunc: c.NotFoundHandleFunc}
 
 	for _, r := range c.Routes {
 		if r.HandleFunc == nil {
@@ -444,7 +444,7 @@ func New(c *Config) *tinyRouter {
 }
 
 // Dump is for debug purpose.
-func (tr *tinyRouter) Dump() string {
+func (tr *TinyRouter) Dump() string {
 	var b strings.Builder
 	for i, pathsByMethod := range tr.pathsByNumToken[:] {
 		for method, paths := range pathsByMethod {
@@ -475,8 +475,8 @@ func (tr *tinyRouter) Dump() string {
 	return b.String()
 }
 
-// ServeHTTP lets *tinyRouter implement http.Handler interface.
-func (tr *tinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+// ServeHTTP lets *TinyRouter implement http.Handler interface.
+func (tr *TinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	urlPath := req.URL.Path[1:]
 	if len(urlPath) > 1024 {
 		urlPath = urlPath[:1024]
