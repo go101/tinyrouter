@@ -81,7 +81,7 @@ type segment struct {
 	startLonger *segment
 
 	// The first wildcard segment (at the same column).
-	// If set.startWildcard == seg, then seg is wildcard.
+	// If seg.startWildcard == seg, then segment seg is wildcard.
 	startWildcard *segment
 
 	// Which path this segment belongs to.
