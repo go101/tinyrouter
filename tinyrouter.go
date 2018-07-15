@@ -354,7 +354,7 @@ type TinyRouter struct {
 	maxNumTokens int
 
 	// The default one in the standard http package is used on nil.
-	notFoundHandleFunc http.HandlerFunc
+	othersHandleFunc http.HandlerFunc
 }
 
 // A Config value specifies the properties of a TinyRouter.
@@ -362,8 +362,9 @@ type Config struct {
 	// This routing table
 	Routes []Route
 
-	// Not found handler function.
-	NotFoundHandleFunc http.HandlerFunc
+	// Handler function for unmatched paths.
+	// Nil means http.NotFound.
+	OthersHandleFunc http.HandlerFunc
 
 	// todo:
 	// Ignore tailing slash or not.
@@ -385,7 +386,10 @@ type Route struct {
 
 // New returns *TinyRouter value, which is also a http.Handler value.
 func New(c *Config) *TinyRouter {
-	tr := &TinyRouter{notFoundHandleFunc: c.NotFoundHandleFunc}
+	tr := &TinyRouter{othersHandleFunc: c.OthersHandleFunc}
+	if tr.othersHandleFunc == nil {
+		tr.othersHandleFunc = http.NotFound
+	}
 
 	for _, r := range c.Routes {
 		if r.HandleFunc == nil {
@@ -497,11 +501,7 @@ func (tr *TinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	path := findHandlePath(tokens, entrySegment)
 	if path == nil {
-		if tr.notFoundHandleFunc == nil {
-			http.NotFound(w, req)
-		} else {
-			tr.notFoundHandleFunc(w, req)
-		}
+		tr.othersHandleFunc(w, req)
 		return
 	}
 
