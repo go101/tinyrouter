@@ -144,17 +144,21 @@ func main() {
 ### How
 
 The TinyRouter implementation groups routes:
-1. first by number of tokens in path patterns.
-1. then by request methods.
-1. then by path segment token string lengths and whether or not a path segment is wildcard.
-   Wildcard segments are largers than non-wildcard (fixed) segments.
-   Segments with longer tokens are larger than segments with shorter tokens.
+1. first by number of tokens (or called segments) in path patterns.
+1. then by request methods. (This step may be exchanged with the first step in the future versions.)
+1. then (for the 1st segment in patterns), by wildcard (parameterized) or not. Non-wildcard segments are called fixed segments.
+1. then for the segments in the fixed group in the last step, group them by their length.
+1. for each group with the same token length, sort the segments in it.
+
+(Repeat the last steps for 2nd, 3rd, ..., segments.)
 
 When a request comes, its URL path will be parsed into tokens (one **k** in **_O(2k+N)_**).
 1. The route group (by number of tokens) with the exact number of tokens will be selected.
 1. Then the route sub-group with the exact reqest method will be selected.
-1. Then routes will be looked up by their sorted order (another **k** and the **N** in **_O(2k+N)_**).
-   Several micro-optimizations are utilized so that the time complexity
-   for most cases would be **_O(2k+N/m)_**).
+1. Then, for the 1st token, find the start segment with the same length in the fixed groups.
+   If all the fixed segments with the same length don't match, the try to find the match for next toekn in the wildcard group.
+
+(Repeat the last step, until a match is found or all unmatch is reported.)
+
 
 
