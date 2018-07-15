@@ -37,7 +37,7 @@ For example, the following route groups don't work at the same time in HttpRoute
 TinyRouter is router implementation between HttpRouter and [gorilla/mux](https://github.com/gorilla/mux),
 from both performance (for worst case in theory) and flexibity views.
 In practice, for most general cases, TinyRouter is pretty fast.
-The above routes which don't work in HttpRouter all work fine in TinyRouter.
+And, the above routes which don't work in HttpRouter all work fine in TinyRouter.
 
 Partically matched parameters are not supported.
 
