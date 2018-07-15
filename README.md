@@ -156,7 +156,8 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
 1. The route group (by number of tokens) with the exact number of tokens will be selected.
 1. Then the route sub-group with the exact reqest method will be selected.
 1. Then, for the 1st token, find the start segment with the same length in the fixed groups.
-   If all the fixed segments with the same length don't match, the try to find the match for next toekn in the wildcard group.
+   If a fixed match is found, then try to find the match for the next token.
+   If no matches are found, then try to find the match for next toekn in the wildcard group.
 
 (Repeat the last step, until a match is found or return without any matches.
 Another **k** and the **N** happen in the process.
