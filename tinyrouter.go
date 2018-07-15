@@ -112,7 +112,7 @@ func (seg *segment) row() int {
 
 type path struct {
 	raw       string // unparsed pattern
-	next      *path
+	next      *path  // not used (to remove?)
 	segments  []*segment
 	numParams int // how many wildcard segments in this path
 	handle    func(http.ResponseWriter, *http.Request)
