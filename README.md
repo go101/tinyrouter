@@ -165,5 +165,8 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
 Another **k** and the **N** happen in the process.
 Some micro-optimizations in the process make the usual time complexity become to **_O(2k+N/m)_**.)
 
-
+For a project with 20 routes per method. **_N/m_** would be about 5,
+whcih is much smaller that **k**, which is about 16-64.
+So the usual time complexity of this algorithm is about two times of a radix implementation.
+The benefit is there are less limits for the route patterns.
 
