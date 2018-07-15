@@ -161,7 +161,7 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
 
 (Repeat the last step, until a match is found or return without any matches.
 Another **k** and the **N** happen in the process.
-Some micro-optimizations in the process make the common time complexity become to **_O(2k+N/m)_**.)
+Some micro-optimizations in the process make the usual time complexity become to **_O(2k+N/m)_**.)
 
 
 
