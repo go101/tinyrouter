@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// A Params value encapsulates the parameters passed from request URL path.
-// This method will never panic.
+// A Params value encapsulates the parameters
+// passed from request URL path.
 type Params struct {
 	kvs []string
 }
@@ -385,7 +385,7 @@ type Route struct {
 }
 
 // New returns *TinyRouter value, which is also a http.Handler value.
-func New(c *Config) *TinyRouter {
+func New(c Config) *TinyRouter {
 	tr := &TinyRouter{othersHandleFunc: c.OthersHandleFunc}
 	if tr.othersHandleFunc == nil {
 		tr.othersHandleFunc = http.NotFound
