@@ -4,7 +4,7 @@ The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to 
 where **_k_** is the length of a HTTP request path and **_N_** is the number of routes to be matched.
 For general cases, the real complexity is **_O(2k+N/m)_**, where **_m_** is at the level of ten.
 
-### Why
+### Why?
 
 For a long time, Julien Schmidt's [HttpRouter](https://github.com/julienschmidt/HttpRouter)
 is my favorite http router and is used in my many Go projects.
@@ -141,7 +141,7 @@ func main() {
 }
 ```
 
-### How
+### How?
 
 The TinyRouter implementation groups routes:
 1. first by number of tokens (or called segments) in path patterns.
@@ -164,6 +164,8 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
 (Repeat the last step, until a match is found or return without any matches.
 Another **k** and the **N** happen in the process.
 Some micro-optimizations in the process make the usual time complexity become to **_O(2k+N/m)_**.)
+
+### Then What?
 
 For a project with 20 routes per method. **_N/m_** would be about 5,
 whcih is much smaller than **k**, which is about 16-64.
