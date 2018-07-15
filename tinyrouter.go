@@ -33,6 +33,7 @@ func (p Params) Value(key string) string {
 }
 
 // ValueByIndex returns the parameter value corresponds to index i.
+// This method will never panic.
 func (p Params) ValueByIndex(i int) string {
 	if i < p.Num() {
 		return p.kvs[i+i+1]
@@ -313,7 +314,6 @@ func findHandlePath(tokens []string, entrySeg *segment) *path {
 			}
 			k++
 		}
-
 		if seg.nextInRow == nil {
 			return seg.path
 		}
