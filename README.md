@@ -134,7 +134,7 @@ func main() {
 		},
 	}
 	
-	router := tiny.New(&tiny.Config{Routes: routes})
+	router := tiny.New(tiny.Config{Routes: routes})
 
 	log.Println("Starting service ...")
 	log.Fatal(http.ListenAndServe(":8080", router))
