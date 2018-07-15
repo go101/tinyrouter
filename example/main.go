@@ -35,7 +35,7 @@ func main() {
 		makeRoute("GET", "/"),
 		makeRoute("GET", "/:item"),
 	}
-	router := tiny.New(&tiny.Config{
+	router := tiny.New(tiny.Config{
 		Routes: routes,
 		OthersHandleFunc: func(w http.ResponseWriter, req *http.Request) {
 			w.Write([]byte("not found\n"))

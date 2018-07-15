@@ -190,6 +190,19 @@ func TestTinyRouter(t *testing.T) {
 		{
 			route: Route{
 				Method:  "PUT",
+				Pattern: "/v2/fo/:bar",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/v2/fo/xyz",
+					expectedParams: map[string]string{"bar": "xyz"},
+					expectedValues: []string{"xyz"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "PUT",
 				Pattern: "/v2/:foo/:bar",
 			},
 			requests: []requestCase{
@@ -232,7 +245,7 @@ func TestTinyRouter(t *testing.T) {
 		route.HandleFunc = buildHandler(rc)
 		routes = append(routes, route)
 	}
-	router := New(&Config{Routes: routes})
+	router := New(Config{Routes: routes})
 
 	// ...
 	for _, rc := range routeCases {
