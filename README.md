@@ -4,14 +4,14 @@ The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to 
 
 ### Why
 
-For a long time, Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter)
+For a long time, Julien Schmidt's [HttpRouter](https://github.com/julienschmidt/HttpRouter)
 is my favorite http router and is used in my many Go projects.
-For most cases, httprouter works very well.
-However, sometimes httprouter is some frustrating for [lacking of flexibity](https://github.com/julienschmidt/httprouter/search?q=conflicts&type=Issues).
-For example, the following route groups don't work at the same time in httprouter.
+For most cases, HttpRouter works very well.
+However, sometimes HttpRouter is some frustrating for [lacking of flexibity](https://github.com/julienschmidt/HttpRouter/search?q=conflicts&type=Issues).
+For example, the following route groups don't work at the same time in HttpRouter.
 
 ```golang
-	router := httprouter.New()
+	router := HttpRouter.New()
 
 	// 1
 	router.GET("/organizations/:param1/members/:param2", handle)
@@ -34,9 +34,10 @@ For example, the following route groups don't work at the same time in httproute
 	router.GET("/sub/:id", handle)
 ```
 
-TinyRouter is router implementation between httprouter and [gorilla/mux](https://github.com/gorilla/mux),
-from both performance (in theory) and flexibity views.
-The above routes which don't work in httprouter all work fine in TinyRouter.
+TinyRouter is router implementation between HttpRouter and [gorilla/mux](https://github.com/gorilla/mux),
+from both performance (for worst case in theory) and flexibity views.
+In practice, for most general cases, TinyRouter is pretty fast.
+The above routes which don't work in HttpRouter all work fine in TinyRouter.
 
 Partically matched parameters are not supported.
 
