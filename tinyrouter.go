@@ -384,7 +384,7 @@ type Route struct {
 	HandleFunc      http.HandlerFunc
 }
 
-// New returns *TinyRouter value, which is also a http.Handler value.
+// New returns a *TinyRouter value, which is also a http.Handler value.
 func New(c Config) *TinyRouter {
 	tr := &TinyRouter{othersHandleFunc: c.OthersHandleFunc}
 	if tr.othersHandleFunc == nil {
