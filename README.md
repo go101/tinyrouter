@@ -155,7 +155,9 @@ The TinyRouter implementation groups routes:
 When a request comes, its URL path will be parsed into tokens (one **k** in **_O(2k+N)_**).
 1. The route group (by number of tokens) with the exact number of tokens will be selected.
 1. Then the route sub-group with the exact reqest method will be selected.
-1. Then, for the 1st token, find the start segment with the same length in the fixed groups.
+1. Then, for the 1st token, find the start segment with the same length in the fixed groups
+   and start comparing the token with the same-length segments.
+   Most `len(token)` bytes will be compared in this comparision.
    If a fixed match is found, then try to find the match for the next token.
    If no matches are found, then try to find the match for next token in the wildcard group.
 
