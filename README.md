@@ -1,6 +1,8 @@
 A tiny Go http router supporting custom parameters in paths.
 
-The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to route http requests.
+The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to route HTTP requests.
+where **_k_** is the length of a HTTP request path and **_N_** is the number of routes to be matched.
+For general cases, the real complexity is **_O(2k+N/m)_**, where **_m_** is at the level of ten.
 
 ### Why
 
