@@ -65,14 +65,6 @@ func (p Params) ToMapAndSlice() (m map[string]string, vs []string) {
 	return
 }
 
-// Num returns the number of parameters.
-func (p Params) Num() int {
-	if p.path == nil {
-		return 0
-	}
-	return p.path.numParams
-}
-
 // To avoid being overwritten by outer code.
 type paramsContextKeyType struct{}
 
@@ -136,8 +128,9 @@ func (seg *segment) row() int {
 type path struct {
 	raw       string // unparsed pattern
 	segments  []*segment
-	numParams int // how many wildcard segments in this path
 	handle    func(http.ResponseWriter, *http.Request)
+	numParams int32 // how many wildcard segments in this path
+	row       int32 // row index in a path group
 }
 
 func (p *path) String() string {
