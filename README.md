@@ -3,7 +3,7 @@
 
 TineyRouter is a tiny Go http router supporting custom parameters in paths.
 
-The Go package implements an **_O(2k+N)_** complexity algorithm (worst case) to route HTTP requests.
+The Go package implements an **_O(2k+N)_** complexity algorithm (usual case) to route HTTP requests.
 where **_k_** is the length of a HTTP request path and **_N_** is the number of routes to be matched.
 For general cases, the real complexity is **_O(2k+N/m)_**, where **_m_** is at the level of ten.
 
@@ -40,7 +40,7 @@ For example, the following route groups don't work at the same time in HttpRoute
 ```
 
 TinyRouter is router implementation between HttpRouter and [gorilla/mux](https://github.com/gorilla/mux),
-from both performance (for worst case in theory) and flexibility views.
+from both performance and flexibility views.
 In practice, for most general cases, TinyRouter is pretty fast.
 And, the above routes which don't work in HttpRouter all work fine in TinyRouter.
 
