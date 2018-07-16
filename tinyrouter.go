@@ -13,19 +13,19 @@ import (
 	"strings"
 )
 
-// A Params value encapsulates the parameters
-// passed from request URL path.
+// A Params encapsulates the parameters in request URL path.
 type Params struct {
-	kvs []string
+	path   *path
+	tokens []string
 }
 
 // Value returns the parameter value corresponds to key.
 // This method will never panic.
 func (p Params) Value(key string) string {
-	if key != "" {
-		for i := 0; i < len(p.kvs); i += 2 {
-			if p.kvs[i] == key {
-				return p.kvs[i+1]
+	if p.path != nil && key != "" {
+		for _, seg := range p.path.segments {
+			if seg.wildcard() && seg.token == key {
+				return p.tokens[seg.colIndex]
 			}
 		}
 	}
@@ -35,25 +35,48 @@ func (p Params) Value(key string) string {
 // ValueByIndex returns the parameter value corresponds to index i.
 // This method will never panic.
 func (p Params) ValueByIndex(i int) string {
-	if i < p.Num() {
-		return p.kvs[i+i+1]
+	if p.path != nil {
+		for _, seg := range p.path.segments {
+			if seg.wildcard() {
+				if i--; i < 0 {
+					return p.tokens[seg.colIndex]
+				}
+			}
+		}
 	}
 	return ""
 }
 
-// Num returns the number of parameters.
-func (p Params) Num() int {
-	return len(p.kvs) >> 1
+// Convert a Params to a map[string]string and []string.
+// Mainly for debug purpose.
+func (p Params) ToMapAndSlice() (m map[string]string, vs []string) {
+	if p.path != nil {
+		m = make(map[string]string, p.path.numParams)
+		vs = make([]string, 0, p.path.numParams)
+		for _, seg := range p.path.segments {
+			if seg.wildcard() {
+				vs = append(vs, p.tokens[seg.colIndex])
+				if seg.token != "" {
+					m[seg.token] = p.tokens[seg.colIndex]
+				}
+			}
+		}
+	}
+	return
 }
 
-// To avoid being overwritten bu outer code.
+// Num returns the number of parameters.
+func (p Params) Num() int {
+	if p.path == nil {
+		return 0
+	}
+	return p.path.numParams
+}
+
+// To avoid being overwritten by outer code.
 type paramsContextKeyType struct{}
 
 var paramsContextKey paramsContextKeyType
-
-func requestWithParams(req *http.Request, kvs []string) *http.Request {
-	return req.WithContext(context.WithValue(req.Context(), paramsContextKey, Params{kvs}))
-}
 
 // PathParams returns parameters passed from URL path.
 func PathParams(req *http.Request) Params {
@@ -88,8 +111,8 @@ type segment struct {
 	// Which path this segment belongs to.
 	path *path
 
-	// For debug only.
-	rowIndex int64
+	// rowIndex is for debug only.
+	rowIndex, colIndex int32
 }
 
 func (seg *segment) wildcard() bool {
@@ -112,7 +135,6 @@ func (seg *segment) row() int {
 
 type path struct {
 	raw       string // unparsed pattern
-	next      *path  // not used (to remove?)
 	segments  []*segment
 	numParams int // how many wildcard segments in this path
 	handle    func(http.ResponseWriter, *http.Request)
@@ -120,21 +142,6 @@ type path struct {
 
 func (p *path) String() string {
 	return p.raw
-}
-
-func (p *path) makeParams(tokens []string) (kvs []string) {
-	if p.numParams > 0 {
-		kvs = make([]string, p.numParams<<1)
-		k := 0
-		for i, seg := range p.segments {
-			if seg.wildcard() {
-				kvs[k] = seg.token
-				kvs[k+1] = tokens[i]
-				k = k + 2
-			}
-		}
-	}
-	return
 }
 
 func compareSegments(sa, sb *segment) int {
@@ -191,8 +198,9 @@ func parsePath(r Route) *path {
 		} else {
 			seg = &segment{path: path, token: pattern}
 		}
-		if len(segs) > 0 {
-			segs[len(segs)-1].nextInRow = seg
+		seg.colIndex = int32(len(segs))
+		if seg.colIndex > 0 {
+			segs[seg.colIndex - 1].nextInRow = seg
 		}
 		return
 	}
@@ -418,7 +426,7 @@ func New(c Config) *TinyRouter {
 				return comparePaths(paths[i], paths[j]) < 0
 			})
 
-			for prevPath, i, row := paths[0], 1, int64(0); i < len(paths); i++ {
+			for prevPath, i, row := paths[0], 1, int32(0); i < len(paths); i++ {
 				path := paths[i]
 				if comparePaths(prevPath, path) == 0 {
 					panic(fmt.Sprintf("Equal paths are not allowed:\n   %s\n   %s", prevPath, path))
@@ -431,9 +439,7 @@ func New(c Config) *TinyRouter {
 					prevSeg, seg = prevSeg.nextInRow, seg.nextInRow
 				}
 
-				prevPath.next = path
-				prevPath = path
-				row++
+				prevPath, row = path, row + 1
 			}
 
 			entrySegment := paths[0].segments[0]
@@ -506,7 +512,11 @@ func (tr *TinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if path.numParams > 0 {
-		req = requestWithParams(req, path.makeParams(tokens))
+		req = req.WithContext(context.WithValue(req.Context(), paramsContextKey, Params{path, tokens}))
 	}
 	path.handle(w, req)
 }
+
+
+
+

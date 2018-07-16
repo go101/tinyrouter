@@ -30,13 +30,7 @@ func TestTinyRouter(t *testing.T) {
 
 	buildHandler := func(rc routeCase) func(http.ResponseWriter, *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			ps := PathParams(r)
-			params, values := map[string]string{}, []string(nil)
-			for i := 0; i < len(ps.kvs); i += 2 {
-				params[ps.kvs[i]] = ps.kvs[i+1]
-				values = append(values, ps.kvs[i+1])
-			}
-
+			params, values := PathParams(r).ToMapAndSlice()
 			res := responseCase{
 				Method:  r.Method,
 				Pattern: rc.route.Pattern,
@@ -133,17 +127,17 @@ func TestTinyRouter(t *testing.T) {
 		{
 			route: Route{
 				Method:  "POST",
-				Pattern: "/organizations/:param1/projects/:param2",
+				Pattern: "/organizations/:/projects/:param2",
 			},
 			requests: []requestCase{
 				{
 					urlPath:        "/organizations/Google/projects/Android",
-					expectedParams: map[string]string{"param1": "Google", "param2": "Android"},
+					expectedParams: map[string]string{"param2": "Android"},
 					expectedValues: []string{"Google", "Android"},
 				},
 				{
 					urlPath:        "/organizations/Apple/projects/iPhone",
-					expectedParams: map[string]string{"param1": "Apple", "param2": "iPhone"},
+					expectedParams: map[string]string{"param2": "iPhone"},
 					expectedValues: []string{"Apple", "iPhone"},
 				},
 			},

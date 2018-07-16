@@ -3,9 +3,10 @@
 
 TineyRouter is a tiny Go http router supporting custom parameters in paths.
 
-The Go package implements an **_O(2k+N)_** complexity algorithm (usual case) to route HTTP requests.
-where **_k_** is the length of a HTTP request path and **_N_** is the number of routes to be matched.
-For general cases, the real complexity is **_O(2k+N/m)_**, where **_m_** is at the level of ten.
+The Go package implements an **_O(2.5k +N)_** complexity algorithm (usual case) to route HTTP requests.
+where **_k_** is the length of a HTTP r equest path and **_N_** is the number of routes to be matched
+(for each method with a certain number of segments in path).
+For general cases, the real complexity is **_O(2.5k + N/m)_**, where **_m_** is about 5.
 
 ### Why?
 
@@ -165,11 +166,12 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
    If no matches are found, then try to find the match for next token in the wildcard group.
 
 (Repeat the last step, until a match is found or return without any matches.
-Another **k** and the **N** happen in the process.
-Some micro-optimizations in the process make the usual time complexity become to **_O(2k+N/m)_**.)
+Another **1.5k** and the **N** happen in the process.
+Some micro-optimizations in the process make the usual time complexity become to **_O(2.5k + N/m)_**.
+The worse time complexity for some cases which are rare used in pactice is **_O(kN/2 + N/m)_**).
 
-For a project with 20 routes per method, **_N/m_** would be about 5,
-whcih is much smaller than **k**, which is about 16-64.
-So the usual time complexity of this algorithm is about two times of a radix implementation.
+For a project with 20 routes per method with a certain number of segments in path,
+**_N/m_** would be about 5, whcih is much smaller than **k**, which is about 16-64.
+So the usual time complexity of this algorithm is about two times and a half of a radix implementation.
 The benefit is there are less limits for the route patterns.
 
