@@ -66,13 +66,11 @@ func (p Params) ToMapAndSlice() (m map[string]string, vs []string) {
 }
 
 // To avoid being overwritten by outer code.
-type paramsContextKeyType struct{}
-
-var paramsContextKey paramsContextKeyType
+type paramsKeyType struct{}
 
 // PathParams returns parameters passed from URL path.
 func PathParams(req *http.Request) Params {
-	p, _ := req.Context().Value(paramsContextKey).(Params)
+	p, _ := req.Context().Value(paramsKeyType{}).(Params)
 	return p
 }
 
@@ -191,9 +189,9 @@ func parsePath(r Route) *path {
 		} else {
 			seg = &segment{path: path, token: pattern}
 		}
-		seg.colIndex = int32(len(segs))
-		if seg.colIndex > 0 {
-			segs[seg.colIndex - 1].nextInRow = seg
+
+		if seg.colIndex = int32(len(segs)); seg.colIndex > 0 {
+			segs[seg.colIndex-1].nextInRow = seg
 		}
 		return
 	}
@@ -266,6 +264,7 @@ func buildSegmentRelations(startSeg, endSeg *segment) {
 		if len(seg.token) > len(shortStart.token) {
 			updateStartLargers()
 			updateStartLongers()
+			buildSegmentRelations(smallerStart.next(), seg.next())
 			shortStart, smallerStart = seg, seg
 			continue
 		}
@@ -315,6 +314,7 @@ func findHandlePath(tokens []string, entrySeg *segment) *path {
 			}
 			k++
 		}
+
 		if seg.nextInRow == nil {
 			return seg.path
 		}
@@ -432,7 +432,7 @@ func New(c Config) *TinyRouter {
 					prevSeg, seg = prevSeg.nextInRow, seg.nextInRow
 				}
 
-				prevPath, row = path, row + 1
+				prevPath, row = path, row+1
 			}
 
 			entrySegment := paths[0].segments[0]
@@ -447,7 +447,7 @@ func New(c Config) *TinyRouter {
 }
 
 // Dump is for debug purpose.
-func (tr *TinyRouter) Dump() string {
+func (tr *TinyRouter) DumpInfo() string {
 	var b strings.Builder
 	for i, pathsByMethod := range tr.pathsByNumToken[:] {
 		for method, paths := range pathsByMethod {
@@ -475,6 +475,7 @@ func (tr *TinyRouter) Dump() string {
 			}
 		}
 	}
+
 	return b.String()
 }
 
@@ -505,11 +506,7 @@ func (tr *TinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if path.numParams > 0 {
-		req = req.WithContext(context.WithValue(req.Context(), paramsContextKey, Params{path, tokens}))
+		req = req.WithContext(context.WithValue(req.Context(), paramsKeyType{}, Params{path, tokens}))
 	}
 	path.handle(w, req)
 }
-
-
-
-

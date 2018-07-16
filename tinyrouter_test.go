@@ -230,6 +230,138 @@ func TestTinyRouter(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/a/b/c/d/:x",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/a/b/c/d/123",
+					expectedParams: map[string]string{"x": "123"},
+					expectedValues: []string{"123"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/a/b/:y/d/e",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/a/b/123/d/e",
+					expectedParams: map[string]string{"y": "123"},
+					expectedValues: []string{"123"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/:z/b/c/d/e",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/123/b/c/d/e",
+					expectedParams: map[string]string{"z": "123"},
+					expectedValues: []string{"123"},
+				},
+			},
+		},
+
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/a123456789/b123456789/c123456789/d123000000",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/a123456789/b123456789/c123456789/d123000000",
+					expectedParams: map[string]string{},
+					expectedValues: []string{},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/a123456789/b123456789/:parameter/d123000000",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/a123456789/b123456789/x/d123000000",
+					expectedParams: map[string]string{"parameter": "x"},
+					expectedValues: []string{"x"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/a123456789/:parameter/c123456789/d123456789",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/a123456789/y/c123456789/d123456789",
+					expectedParams: map[string]string{"parameter": "y"},
+					expectedValues: []string{"y"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/:parameter/b123456789/c123456789/d123456789",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/z/b123456789/c123456789/d123456789",
+					expectedParams: map[string]string{"parameter": "z"},
+					expectedValues: []string{"z"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/:parameter/b123456789/:an_option/d123456789",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/m/b123456789/n/d123456789",
+					expectedParams: map[string]string{"parameter": "m", "an_option": "n"},
+					expectedValues: []string{"m", "n"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/:parameter/:an_option/c123456789/d123456789",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/p/q/c123456789/d123456789",
+					expectedParams: map[string]string{"parameter": "p", "an_option": "q"},
+					expectedValues: []string{"p", "q"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/:parameter/:an_option/:_whatever/d123456789",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/h/i/j/d123456789",
+					expectedParams: map[string]string{"parameter": "h", "an_option": "i", "_whatever": "j"},
+					expectedValues: []string{"h", "i", "j"},
+				},
+			},
+		},
 	}
 
 	// ...
@@ -240,6 +372,8 @@ func TestTinyRouter(t *testing.T) {
 		routes = append(routes, route)
 	}
 	router := New(Config{Routes: routes})
+
+	t.Log(router.DumpInfo())
 
 	// ...
 	for _, rc := range routeCases {
