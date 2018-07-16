@@ -23,8 +23,8 @@ type Params struct {
 // This method will never panic.
 func (p Params) Value(key string) string {
 	if p.path != nil && key != "" {
-		for _, seg := range p.path.segments {
-			if seg.wildcard() && seg.token == key {
+		for _, seg := range p.path.wildcards {
+			if seg.token == key {
 				return p.tokens[seg.colIndex]
 			}
 		}
@@ -35,29 +35,23 @@ func (p Params) Value(key string) string {
 // ValueByIndex returns the parameter value corresponds to index i.
 // This method will never panic.
 func (p Params) ValueByIndex(i int) string {
-	if p.path != nil {
-		for _, seg := range p.path.segments {
-			if seg.wildcard() {
-				if i--; i < 0 {
-					return p.tokens[seg.colIndex]
-				}
-			}
-		}
+	if p.path != nil && i >= 0 && i < len(p.path.wildcards) {
+		return p.tokens[p.path.wildcards[i].colIndex]
 	}
 	return ""
 }
 
 // Convert a Params to a map[string]string and []string.
 // Mainly for debug purpose.
-func (p Params) ToMapAndSlice() (m map[string]string, vs []string) {
+func (p Params) ToMapAndSlice() (kvs map[string]string, vs []string) {
 	if p.path != nil {
-		m = make(map[string]string, p.path.numParams)
+		kvs = make(map[string]string, p.path.numParams)
 		vs = make([]string, 0, p.path.numParams)
 		for _, seg := range p.path.segments {
 			if seg.wildcard() {
 				vs = append(vs, p.tokens[seg.colIndex])
 				if seg.token != "" {
-					m[seg.token] = p.tokens[seg.colIndex]
+					kvs[seg.token] = p.tokens[seg.colIndex]
 				}
 			}
 		}
@@ -124,15 +118,12 @@ func (seg *segment) row() int {
 }
 
 type path struct {
-	raw       string // unparsed pattern
-	segments  []*segment
-	handle    func(http.ResponseWriter, *http.Request)
-	numParams int32 // how many wildcard segments in this path
-	row       int32 // row index in a path group
-}
-
-func (p *path) String() string {
-	return p.raw
+	raw        string     // unparsed pattern
+	segments   []*segment // []segment is better? Need benchmark.
+	wildcards  []*segment // for fast parameter value look-up
+	handle     func(http.ResponseWriter, *http.Request)
+	numParams  int32 // how many wildcard segments in this path
+	row        int32 // row index in a path group
 }
 
 func compareSegments(sa, sb *segment) int {
@@ -186,6 +177,7 @@ func parsePath(r Route) *path {
 			seg = &segment{path: path, token: pattern[1:]}
 			seg.startWildcard = seg
 			path.numParams++
+			path.wildcards = append(path.wildcards, seg)
 		} else {
 			seg = &segment{path: path, token: pattern}
 		}
@@ -422,7 +414,7 @@ func New(c Config) *TinyRouter {
 			for prevPath, i, row := paths[0], 1, int32(0); i < len(paths); i++ {
 				path := paths[i]
 				if comparePaths(prevPath, path) == 0 {
-					panic(fmt.Sprintf("Equal paths are not allowed:\n   %s\n   %s", prevPath, path))
+					panic(fmt.Sprintf("Equal paths are not allowed:\n   %s\n   %s", prevPath.raw, path.raw))
 				}
 
 				prevSeg, seg := prevPath.segments[0], path.segments[0]

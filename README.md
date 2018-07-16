@@ -45,7 +45,9 @@ from both performance and flexibility views.
 In practice, for most general cases, TinyRouter is pretty fast.
 And, the above routes which don't work in HttpRouter all work fine in TinyRouter.
 
-Partically matched parameters are not supported.
+Like many other router packages, a token in path patterns starting a `:`
+is viewed as a parameter.
+Partically matched parameters are not supported by TinyRouter.
 
 An example by using TinyRouter:
 
@@ -145,6 +147,23 @@ func main() {
 }
 ```
 
+Fixed tokens in patterns have higher precedences than parameterized ones.
+Left tokes have higher precedences than right ones.
+The following patterns are shown by their precedence:
+```
+1: /a/b/:c
+2: /a/:b/c
+4: /a/:b/:c
+3: /:a/x/c
+5: /:a/:b/:c
+```
+So,
+* `/a/b/c` will match the 1st one
+* `a/x/c` will match the 2nd one,
+* `a/x/y` will match the 2nd one,
+* `/y/x/c` will match the 4th one.
+* `/y/x/z` will match the 5th one.
+
 ### How?
 
 The TinyRouter implementation groups routes:
@@ -167,7 +186,8 @@ When a request comes, its URL path will be parsed into tokens (one **k** in **_O
 
 (Repeat the last step, until a match is found or return without any matches.
 Another **k** and the **N** happen in the process.
-Some micro-optimizations in the process make the usual time complexity become to **_O(2k + N/m)_**.
+Some micro-optimizations, by using some one-time built information,
+in the process make the usual time complexity become to **_O(2k + N/m)_**.)
 
 For a project with 20 routes per method with a certain number of segments in path,
 **_N/m_** would be about 5, whcih is much smaller than **k**, which is about 16-64.
