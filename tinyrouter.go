@@ -69,16 +69,15 @@ func PathParams(req *http.Request) Params {
 }
 
 type segment struct {
+	// Which path this segment belongs to.
+	path *path
+
 	// For fixed segment, this is the text needed to be matched exactly.
 	// For wildcard segment, this is the parameter name.
 	token string
 
-	// The previous/next segments in path.
-	nextInRow *segment
-
-	// The segment (at the same column) in the next path.
-	// Only used in initialization phase.
-	nextInCol *segment
+	// The next segment in path and the same0column segment in the next paths.
+	nextInRow, nextInCol *segment
 
 	// The first segment (at the same column) with a larger token, but
 	// with the same length. A non-nil startLarger can't be wildcard.
@@ -92,11 +91,11 @@ type segment struct {
 	// If seg.startWildcard == seg, then segment seg is wildcard.
 	startWildcard *segment
 
-	// Which path this segment belongs to.
-	path *path
-
 	// rowIndex is for debug only.
 	rowIndex, colIndex int32
+
+	// How many equal prefix bytes with startLarger.
+	numSameBytes int32
 }
 
 func (seg *segment) wildcard() bool {
@@ -118,12 +117,12 @@ func (seg *segment) row() int {
 }
 
 type path struct {
-	raw        string     // unparsed pattern
-	segments   []*segment // []segment is better? Need benchmark.
-	wildcards  []*segment // for fast parameter value look-up
-	handle     func(http.ResponseWriter, *http.Request)
-	numParams  int32 // how many wildcard segments in this path
-	row        int32 // row index in a path group
+	raw       string     // unparsed pattern
+	segments  []*segment // []segment is better? Need benchmark. (or [][]segments for a path group?)
+	wildcards []*segment // for fast parameter value look-up
+	handle    func(http.ResponseWriter, *http.Request)
+	numParams int32 // how many wildcard segments in this path
+	row       int32 // row index in a path group
 }
 
 func compareSegments(sa, sb *segment) int {
@@ -293,15 +292,17 @@ func findHandlePath(tokens []string, entrySeg *segment) *path {
 			continue
 		}
 
+		t := seg.token[:len(token)]
 		for k := 0; k < len(token); {
-			if seg.token[k] > token[k] {
+			if t[k] > token[k] {
 				goto Wildcard
 			}
-			if seg.token[k] < token[k] {
-				seg = seg.startLarger
-				if seg == nil {
+			if t[k] < token[k] {
+				if seg.startLarger == nil || seg.numSameBytes < int32(k) {
 					goto Wildcard
 				}
+				seg = seg.startLarger
+				t = seg.token[:len(token)]
 				continue
 			}
 			k++
@@ -363,11 +364,6 @@ type Config struct {
 	// Ignore tailing slash or not.
 	// Explicit routes have higher priorities.
 	//IgnoreTailingSlash bool
-
-	// todo:
-	// The prefix to indicate whether a token is parameterized.
-	// Blank means ":".
-	//ParameterPrefix string
 }
 
 // A Route value specifies a request method, path pattern and
@@ -432,13 +428,25 @@ func New(c Config) *TinyRouter {
 			tr.entryByNumToken[numSegments] = entryByNumMethod
 
 			buildSegmentRelations(entrySegment, nil)
+
+			statSamePrefixBytes := func(a, b string, num *int32) {
+				for ; *num < int32(len(a)) && a[*num] == b[*num]; *num++ {
+				}
+			}
+			for col := 0; col < len(paths[0].segments); col++ {
+				for row := 0; row < len(paths); row++ {
+					seg := paths[row].segments[col]
+					if seg.startLarger != nil {
+						statSamePrefixBytes(seg.token, seg.startLarger.token, &seg.numSameBytes)
+					}
+				}
+			}
 		}
 	}
-
 	return tr
 }
 
-// Dump is for debug purpose.
+// DumpInfo is for debug purpose.
 func (tr *TinyRouter) DumpInfo() string {
 	var b strings.Builder
 	for i, pathsByMethod := range tr.pathsByNumToken[:] {
@@ -462,12 +470,13 @@ func (tr *TinyRouter) DumpInfo() string {
 					b.WriteString(strconv.Itoa(seg.startLonger.row()))
 					b.WriteString(" ")
 					b.WriteString(strconv.Itoa(seg.startWildcard.row()))
+					b.WriteString(" ")
+					b.WriteString(strconv.Itoa(int(seg.numSameBytes)))
 					b.WriteString("]")
 				}
 			}
 		}
 	}
-
 	return b.String()
 }
 

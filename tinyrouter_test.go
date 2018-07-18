@@ -11,9 +11,10 @@ import (
 func TestTinyRouter(t *testing.T) {
 
 	type requestCase struct {
-		urlPath        string
-		expectedParams map[string]string
-		expectedValues []string
+		urlPath         string
+		expectedParams  map[string]string
+		expectedValues  []string
+		expectedPattern string // for invert testing. If this is set, route.Pattern must be unset.
 	}
 
 	type routeCase struct {
@@ -72,6 +73,45 @@ func TestTinyRouter(t *testing.T) {
 					urlPath:        "/sitemap",
 					expectedParams: map[string]string{"item": "sitemap"},
 					expectedValues: []string{"sitemap"},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/aaabbb",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/aaabbb",
+					expectedParams: map[string]string{},
+					expectedValues: []string{},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method:  "GET",
+				Pattern: "/cccddd",
+			},
+			requests: []requestCase{
+				{
+					urlPath:        "/cccddd",
+					expectedParams: map[string]string{},
+					expectedValues: []string{},
+				},
+			},
+		},
+		{
+			route: Route{
+				Method: "GET",
+			},
+			requests: []requestCase{
+				{
+					urlPath:         "/aaaddd",
+					expectedParams:  map[string]string{"item": "aaaddd"},
+					expectedValues:  []string{"aaaddd"},
+					expectedPattern: "/:item",
 				},
 			},
 		},
@@ -368,45 +408,59 @@ func TestTinyRouter(t *testing.T) {
 	routes := []Route{}
 	for _, rc := range routeCases {
 		route := rc.route
-		route.HandleFunc = buildHandler(rc)
-		routes = append(routes, route)
+		if route.Pattern != "" {
+			route.HandleFunc = buildHandler(rc)
+			routes = append(routes, route)
+		}
 	}
 	router := New(Config{Routes: routes})
 
-	t.Log(router.DumpInfo())
+	// t.Log(router.DumpInfo())
 
 	// ...
+OuterMost:
 	for _, rc := range routeCases {
 		for _, reqc := range rc.requests {
 			req := httptest.NewRequest(rc.route.Method, "http://example.com"+reqc.urlPath, nil)
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 			resp := w.Result()
+			defer resp.Body.Close()
 			body, _ := ioutil.ReadAll(resp.Body)
 			var resc responseCase
 			_ = json.Unmarshal(body, &resc)
 			if resc.Method != rc.route.Method {
 				t.Errorf("method not match: %s : %s %s", resc.Method, rc.route.Method, rc.route.Pattern)
+				break OuterMost
 			}
-			if resc.Pattern != rc.route.Pattern {
-				t.Errorf("pattern not match: %s : %s %s", resc.Pattern, rc.route.Method, rc.route.Pattern)
+			if reqc.expectedPattern != "" && resc.Pattern != reqc.expectedPattern {
+				t.Errorf("pattern not match (1): %s : %s %s", resc.Pattern, rc.route.Method, reqc.expectedPattern)
+				break OuterMost
+			}
+			if rc.route.Pattern != "" && resc.Pattern != rc.route.Pattern {
+				t.Errorf("pattern not match (2): %s : %s %s", resc.Pattern, rc.route.Method, rc.route.Pattern)
+				break OuterMost
 			}
 			for k, v := range resc.Params {
 				if v != reqc.expectedParams[k] {
 					t.Errorf("param value not match: [%s] / %s / %s : %s %s", k, v, reqc.expectedParams[k], rc.route.Method, rc.route.Pattern)
+					break OuterMost
 				}
 			}
 			for k, v := range reqc.expectedParams {
 				if v != resc.Params[k] {
 					t.Errorf("param value not match: [%s] / %s / %s : %s %s", k, resc.Params[k], v, rc.route.Method, rc.route.Pattern)
+					break OuterMost
 				}
 			}
 			if len(resc.Values) != len(reqc.expectedValues) {
 				t.Errorf("number of params not match: %d / %d : %s %s", len(resc.Values), len(reqc.expectedValues), rc.route.Method, rc.route.Pattern)
+				break OuterMost
 			}
 			for i, v := range resc.Values {
 				if reqc.expectedValues[i] != v {
 					t.Errorf("param value not match: [%d] / %s / %s : %s %s", i, reqc.expectedValues[i], v, rc.route.Method, rc.route.Pattern)
+					break OuterMost
 				}
 			}
 		}

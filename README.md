@@ -46,8 +46,7 @@ In practice, for most general cases, TinyRouter is pretty fast.
 And, the above routes which don't work in HttpRouter all work fine in TinyRouter.
 
 Like many other router packages, a token in path patterns starting a `:`
-is viewed as a parameter.
-Partically matched parameters are not supported by TinyRouter.
+is viewed as a parameter. Regexp patterns are not supported by TinyRouter.
 
 An example by using TinyRouter:
 
@@ -173,7 +172,7 @@ The TinyRouter implementation groups routes:
 1. then for the segments in the fixed group in the last step, group them by their length.
 1. for each group with the same token length, sort the segments in it.
 
-(Repeat the last steps for 2nd, 3rd, ..., segments.)
+(Repeat the last two steps for 2nd, 3rd, ..., segments.)
 
 When a request comes, its URL path will be parsed into tokens (one **k** in **_O(2k + N)_**).
 1. The route group (by number of tokens) with the exact number of tokens will be selected.
