@@ -424,9 +424,9 @@ func Benchmark_GorillaMux_65536bytes(b *testing.B) {
 	}
 }
 
-// 2
+// flexible patterns
 
-func Benchmark_TinyRouter_0bytes_b(b *testing.B) {
+func Benchmark_TinyRouter_FlexiblePatterns_0bytes(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, req := range requests {
 			handle(req, tinyRouter0_b)
@@ -434,7 +434,7 @@ func Benchmark_TinyRouter_0bytes_b(b *testing.B) {
 	}
 }
 
-func Benchmark_GorillaMux_0bytes_b(b *testing.B) {
+func Benchmark_GorillaMux_FlexiblePatterns_0bytes(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, req := range requests {
 			handle(req, gorillaRouter0_b)

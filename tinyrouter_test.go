@@ -172,12 +172,12 @@ func TestTinyRouter(t *testing.T) {
 			requests: []requestCase{
 				{
 					urlPath:        "/organizations/Google/projects/Android",
-					expectedParams: map[string]string{"param2": "Android"},
+					expectedParams: map[string]string{"": "Google", "param2": "Android"},
 					expectedValues: []string{"Google", "Android"},
 				},
 				{
 					urlPath:        "/organizations/Apple/projects/iPhone",
-					expectedParams: map[string]string{"param2": "iPhone"},
+					expectedParams: map[string]string{"": "Apple", "param2": "iPhone"},
 					expectedValues: []string{"Apple", "iPhone"},
 				},
 			},

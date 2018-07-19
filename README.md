@@ -1,12 +1,11 @@
 
 ### What?
 
-TineyRouter is a tiny Go http router supporting custom parameters in paths.
+TineyRouter is a tiny Go http router supporting custom parameters in paths
+(500 lines of code).
 
-The Go package implements an **_O(2k + N)_** complexity algorithm (usual case) to route HTTP requests.
-where **_k_** is the length of a HTTP r equest path and **_N_** is the number of routes to be matched
-(for each method with a certain number of segments in path).
-For general cases, the real complexity is **_O(2k + N/m)_**, where **_m_** is about 5.
+The Go package implements an **_O(2k)_** complexity algorithm (usual case) to route HTTP requests.
+where **_k_** is the length of a HTTP request path.
 
 ### Why?
 
@@ -14,30 +13,35 @@ For a long time, Julien Schmidt's [HttpRouter](https://github.com/julienschmidt/
 is my favorite http router and is used in my many Go projects.
 For most cases, HttpRouter works very well.
 However, sometimes HttpRouter is some frustrating for [lacking of flexibity](https://github.com/julienschmidt/HttpRouter/search?q=conflicts&type=Issues).
-For example, the following route groups don't work at the same time in HttpRouter.
+For example, path patterns in the following groups are conflicted with each other in HttpRouter.
 
-```golang
-	router := HttpRouter.New()
-
+```
 	// 1
-	router.GET("/organizations/:param1/members/:param2", handle)
-	router.GET("/organizations/:abc/projects/:param2", handle)
+	/organizations/:param1/members/:param2
+	/organizations/:abc/projects/:param2
 
 	// 2
-	router.GET("/v1/user/selection", handle)
-	router.GET("/v1/:name/selection", handle)
+	/v1/user/selection
+	/v1/:name/selection
 
 	// 3
-	router.GET("/v2/:user/info", handle)
-	router.GET("/v2/:user/:group", handle)
+	/v2/:user/info
+	/v2/:user/:group
 
 	// 4
-	router.GET("/v3/user/selection", handle)
-	router.GET("/v3/:name", handle)
+	/v3/user/selection
+	/v3/:name
 
 	// 5
-	router.GET("/sub/:group/:item", handle)
-	router.GET("/sub/:id", handle)
+	/sub/:group/:item
+	/sub/:id
+	
+	// 6
+	/a/b/:c
+	/a/:b/c
+	/a/:b/:c
+	/:a/b/c
+	/:a/:b/:c
 ```
 
 TinyRouter is router implementation between HttpRouter and [gorilla/mux](https://github.com/gorilla/mux),
@@ -65,81 +69,77 @@ func main() {
 	routes := []tiny.Route{
 		{
 			Method: "GET",
-			Pattern: "/organizations/:org/members/:member",
+			Pattern: "/design/:user/:slot",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "org: %s, member: %s\n", params.Value("org"), params.Value("member"))
+				fmt.Fprintln(w, "/design/:user/:slot", "user:", params.Value("user"), "slot:", params.Value("slot"))
 			},
 		},
 		{
 			Method: "GET",
-			Pattern: "/organizations/:org/projects/:project",
+			Pattern: "/design/:user/:slot/settings/show",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "org: %s, project: %s\n", params.Value("org"), params.Value("project"))
-			},
-		},
-
-		{
-			Method: "GET",
-			Pattern: "/v1/:name/info",
-			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "info of %s (v1)\n", params.Value("name"))
+				fmt.Fprintln(w, "/design/:user/:slot/settings/show", "user:", params.Value("user"), "slot:", params.Value("slot"))
 			},
 		},
 		{
-			Method: "GET",
-			Pattern: "/v1/website/info",
-			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				fmt.Fprintf(w, "website info\n")
-			},
-		},
-
-		{
-			Method: "GET",
-			Pattern: "/v2/:name/info",
+			Method: "POST",
+			Pattern: "/design/:user/:slot/settings/update",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "info of %s (v2)\n", params.Value("name"))
+				fmt.Fprintln(w, "/design/:user/:slot/settings/update", "user:", params.Value("user"), "slot:", params.Value("slot"))
+			},
+		},
+		{
+			Method: "POST",
+			Pattern: "/design/:user/:slot/delete",
+			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
+				params := tiny.PathParams(req)
+				fmt.Fprintln(w, "/design/:user/:slot/delete", "user:", params.Value("user"), "slot:", params.Value("slot"))
 			},
 		},
 		{
 			Method: "GET",
-			Pattern: "/v2/:group/:item",
+			Pattern: "/design/:uuid",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "grooup: %s, item: %s\n", params.Value("group"), params.Value("item"))
+				fmt.Fprintln(w, "/design/:uuid", "uuid =", params.Value("uuid"))
 			},
 		},
 		{
 			Method: "GET",
-			Pattern: "/v2/:id",
+			Pattern: "/design/:uuid/stat",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "id: %s(v2)\n", params.Value("id"))
+				fmt.Fprintln(w, "/design/:uuid/stat", "uuid =", params.Value("uuid"))
 			},
 		},
-
-
 		{
 			Method: "GET",
 			Pattern: "/",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
-				fmt.Fprintf(w, "home\n")
+				fmt.Fprintln(w, "/")
 			},
 		},
 		{
 			Method: "GET",
-			Pattern: "/:item",
+			Pattern: "/:sitepage",
 			HandleFunc: func(w http.ResponseWriter, req *http.Request) {
 				params := tiny.PathParams(req)
-				fmt.Fprintf(w, "item: %s\n", params.Value("item"))
+				fmt.Fprintln(w, "/", "sitepage =", params.Value("sitepage"))
 			},
 		},
 	}
 	
-	router := tiny.New(tiny.Config{Routes: routes})
+	config := tiny.Config{
+		Routes:           routes,
+		OthersHandleFunc: func(w http.ResponseWriter, req *http.Request) {
+			fmt.Fprintln(w, "other pages")
+		},
+	}
+	
+	router := tiny.New(config)
 
 	log.Println("Starting service ...")
 	log.Fatal(http.ListenAndServe(":8080", router))
@@ -153,21 +153,23 @@ The following patterns are shown by their precedence:
 1: /a/b/:c
 2: /a/:b/c
 4: /a/:b/:c
-3: /:a/x/c
+3: /:a/b/c
 5: /:a/:b/:c
 ```
 So,
 * `/a/b/c` will match the 1st one
 * `a/x/c` will match the 2nd one,
 * `a/x/y` will match the 2nd one,
-* `/y/x/c` will match the 4th one.
+* `/x/b/c` will match the 4th one.
 * `/y/x/z` will match the 5th one.
+
+The match rules and results are the same as Gorilla/Mux.
 
 ### How?
 
 The TinyRouter implementation groups routes:
-1. first by number of tokens (or called segments) in path patterns.
-1. then by request methods. (This step may be exchanged with the first step in the future versions.)
+1. first by request methods.
+1. then by number of tokens (or called segments) in path patterns.
 1. then (for the 1st segment in patterns), by wildcard (parameterized) or not. Non-wildcard segments are called fixed segments.
 1. then for the segments in the fixed group in the last step, group them by their length.
 1. for each group with the same token length, sort the segments in it.
@@ -175,8 +177,8 @@ The TinyRouter implementation groups routes:
 (Repeat the last two steps for 2nd, 3rd, ..., segments.)
 
 When a request comes, its URL path will be parsed into tokens (one **k** in **_O(2k + N)_**).
-1. The route group (by number of tokens) with the exact number of tokens will be selected.
-1. Then the route sub-group with the exact reqest method will be selected.
+1. The route group with the exact reqest method will be selected.
+1. Then the route sub-group (by number of tokens) with the exact number of tokens will be selected.
 1. Then, for the 1st token, find the start segment with the same length in the fixed groups
    and start comparing the token with the same-length segments.
    Most `len(token)` bytes will be compared in this comparision.

@@ -1,8 +1,6 @@
+// Tinyrouter is Go http router supporting custom parameters in paths.
+// The implementation contains only 500 lines of code.
 package tinyrouter
-
-/*
- A tiny Go http router supporting custom parameters in paths.
-*/
 
 import (
 	"context"
@@ -22,7 +20,7 @@ type Params struct {
 // Value returns the parameter value corresponds to key.
 // This method will never panic.
 func (p Params) Value(key string) string {
-	if p.path != nil && key != "" {
+	if p.path != nil {
 		for _, seg := range p.path.wildcards {
 			if seg.token == key {
 				return p.tokens[seg.colIndex]
@@ -41,7 +39,7 @@ func (p Params) ValueByIndex(i int) string {
 	return ""
 }
 
-// Convert a Params to a map[string]string and []string.
+// Convert a Params to a map[string]string and a []string.
 // Mainly for debug purpose.
 func (p Params) ToMapAndSlice() (kvs map[string]string, vs []string) {
 	if p.path != nil {
@@ -50,9 +48,7 @@ func (p Params) ToMapAndSlice() (kvs map[string]string, vs []string) {
 		for _, seg := range p.path.segments {
 			if seg.wildcard() {
 				vs = append(vs, p.tokens[seg.colIndex])
-				if seg.token != "" {
-					kvs[seg.token] = p.tokens[seg.colIndex]
-				}
+				kvs[seg.token] = p.tokens[seg.colIndex]
 			}
 		}
 	}
@@ -169,7 +165,7 @@ func parsePath(r Route) *path {
 	buildSegment := func(pattern string, segs []*segment) (seg *segment) {
 		if strings.HasPrefix(pattern, ":") {
 			for _, seg := range segs {
-				if seg.wildcard() && seg.token != "" && seg.token == pattern[1:] {
+				if seg.wildcard() && seg.token == pattern[1:] {
 					panic("duplicated parameter name [" + pattern[1:] + "] in " + r.Pattern)
 				}
 			}
@@ -339,10 +335,10 @@ const maxSegmentsInPath = 32
 type TinyRouter struct {
 	// First by the number of tokens, then by method.
 	// Used in initialization phase and in dumping.
-	pathsByNumToken [maxSegmentsInPath]map[string][]*path
+	pathsByMethod map[string]*[maxSegmentsInPath][]*path
 
 	// Used in serving phase. The entry segment is paths[0].segments[0].
-	entryByNumToken [maxSegmentsInPath]map[string]*segment
+	entryByMethod map[string]*[maxSegmentsInPath]*segment
 
 	// To avoid power exhausting attacks in request path parsing.
 	maxNumTokens int
@@ -379,6 +375,8 @@ func New(c Config) *TinyRouter {
 	if tr.othersHandleFunc == nil {
 		tr.othersHandleFunc = http.NotFound
 	}
+	tr.pathsByMethod = make(map[string]*[maxSegmentsInPath][]*path, 8)
+	tr.entryByMethod = make(map[string]*[maxSegmentsInPath]*segment, 8)
 
 	for _, r := range c.Routes {
 		if r.HandleFunc == nil {
@@ -388,21 +386,23 @@ func New(c Config) *TinyRouter {
 		if len(rpath.segments) > tr.maxNumTokens {
 			tr.maxNumTokens = len(rpath.segments)
 		}
-		pathsByMethod := tr.pathsByNumToken[len(rpath.segments)-1]
-		if pathsByMethod == nil {
-			pathsByMethod = make(map[string][]*path, 4)
+		if tr.entryByMethod[r.Method] == nil {
+			tr.pathsByMethod[r.Method] = &[maxSegmentsInPath][]*path{}
+			tr.entryByMethod[r.Method] = &[maxSegmentsInPath]*segment{}
 		}
-		pathsByMethod[r.Method] = append(pathsByMethod[r.Method], rpath)
-		tr.pathsByNumToken[len(rpath.segments)-1] = pathsByMethod
+		paths := tr.pathsByMethod[r.Method][len(rpath.segments)-1]
+		if paths == nil {
+			paths = make([]*path, 0, 4)
+		}
+		tr.pathsByMethod[r.Method][len(rpath.segments)-1] = append(paths, rpath)
 	}
 
-	for numSegments, pathsByMethod := range tr.pathsByNumToken[:] {
-		if len(pathsByMethod) == 0 {
-			continue
-		}
+	for method, pathsByNumTokens := range tr.pathsByMethod {
+		for numTokens, paths := range pathsByNumTokens {
+			if paths == nil {
+				continue
+			}
 
-		entryByNumMethod := make(map[string]*segment, len(pathsByMethod))
-		for method, paths := range pathsByMethod {
 			sort.Slice(paths, func(i, j int) bool {
 				return comparePaths(paths[i], paths[j]) < 0
 			})
@@ -422,12 +422,9 @@ func New(c Config) *TinyRouter {
 
 				prevPath, row = path, row+1
 			}
+			tr.entryByMethod[method][numTokens] = paths[0].segments[0]
 
-			entrySegment := paths[0].segments[0]
-			entryByNumMethod[method] = entrySegment
-			tr.entryByNumToken[numSegments] = entryByNumMethod
-
-			buildSegmentRelations(entrySegment, nil)
+			buildSegmentRelations(paths[0].segments[0], nil)
 
 			statSamePrefixBytes := func(a, b string, num *int32) {
 				for ; *num < int32(len(a)) && a[*num] == b[*num]; *num++ {
@@ -449,13 +446,13 @@ func New(c Config) *TinyRouter {
 // DumpInfo is for debug purpose.
 func (tr *TinyRouter) DumpInfo() string {
 	var b strings.Builder
-	for i, pathsByMethod := range tr.pathsByNumToken[:] {
-		for method, paths := range pathsByMethod {
+	for method, pathsByNumTokens := range tr.pathsByMethod {
+		for numTokens, paths := range pathsByNumTokens {
 			if len(paths) == 0 {
 				continue
 			}
 
-			b.WriteString(fmt.Sprintf("\nmethod %s with %d tokens:", method, i+1))
+			b.WriteString(fmt.Sprintf("\nmethod %s with %d tokens:", method, numTokens+1))
 			for i, path := range paths {
 				b.WriteString(fmt.Sprint("\n   ", i, "> "))
 				for _, seg := range path.segments {
@@ -487,16 +484,16 @@ func (tr *TinyRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		urlPath = urlPath[:1024]
 	}
 
-	tokens := strings.SplitN(urlPath, "/", tr.maxNumTokens)
-	entryByMethod := tr.entryByNumToken[len(tokens)-1]
-	if len(entryByMethod) == 0 {
-		w.Write([]byte("no routes for path with " + strconv.Itoa(len(tokens)) + " tokens\n"))
+	entryByNumTokens := tr.entryByMethod[req.Method]
+	if entryByNumTokens == nil {
+		tr.othersHandleFunc(w, req)
 		return
 	}
 
-	entrySegment := entryByMethod[req.Method]
-	if entryByMethod == nil {
-		w.Write([]byte("no routes for method: " + req.Method + " with " + strconv.Itoa(len(tokens)) + " tokens\n"))
+	tokens := strings.SplitN(urlPath, "/", tr.maxNumTokens)
+	entrySegment := entryByNumTokens[len(tokens)-1]
+	if entrySegment == nil {
+		tr.othersHandleFunc(w, req)
 		return
 	}
 
