@@ -7,7 +7,6 @@
 
 ```
 $ go test -bench=. -benchtime=3s -benchmem
-$ go test -bench=. -benchtime=3s -benchmem
 goos: linux
 goarch: amd64
 pkg: github.com/go101/tinyrouter
