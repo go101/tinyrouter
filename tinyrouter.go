@@ -156,7 +156,7 @@ func comparePaths(x, y *path) int {
 }
 
 func parsePath(r Route) *path {
-	if len(r.Pattern) == 0 && r.Pattern[0] != '/' {
+	if len(r.Pattern) == 0 || r.Pattern[0] != '/' {
 		panic("a pattern shell start with a slash: " + r.Pattern)
 	}
 
