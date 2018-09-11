@@ -13,7 +13,7 @@ For a long time, Julien Schmidt's [HttpRouter](https://github.com/julienschmidt/
 is my favorite http router and is used in my many Go projects.
 For most cases, HttpRouter works very well.
 However, sometimes HttpRouter is some frustrating for [lacking of flexibity](https://github.com/julienschmidt/HttpRouter/search?q=conflicts&type=Issues).
-For example, path patterns in the following groups are conflicted with each other in HttpRouter.
+For example, the path patterns in each of the following groups are conflicted with each other in HttpRouter.
 
 ```
 	// 1

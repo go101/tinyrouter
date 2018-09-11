@@ -288,20 +288,22 @@ func findHandlePath(tokens []string, entrySeg *segment) *path {
 			continue
 		}
 
-		t := seg.token[:len(token)]
-		for k := 0; k < len(token); {
-			if t[k] > token[k] {
-				goto Wildcard
-			}
-			if t[k] < token[k] {
-				if seg.startLarger == nil || seg.numSameBytes < int32(k) {
+		var k, n = uint(0), uint(len(token))
+	Next:
+		if len(seg.token) == len(token) { // BCE
+			for k < n {
+				if seg.token[k] > token[k] { // BCEed
 					goto Wildcard
 				}
-				seg = seg.startLarger
-				t = seg.token[:len(token)]
-				continue
+				if seg.token[k] < token[k] {
+					if seg.startLarger == nil || seg.numSameBytes < int32(k) {
+						goto Wildcard
+					}
+					seg = seg.startLarger
+					goto Next
+				}
+				k++
 			}
-			k++
 		}
 
 		if seg.nextInRow == nil {
