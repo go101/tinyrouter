@@ -147,7 +147,7 @@ func main() {
 ```
 
 Fixed tokens in patterns have higher precedences than parameterized ones.
-Left tokes have higher precedences than right ones.
+Left tokens have higher precedences than right ones.
 The following patterns are shown by their precedence:
 ```
 1: /a/b/:c
