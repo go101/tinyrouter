@@ -7,7 +7,7 @@ import "net/http/httptest"
 import "strings"
 import "testing"
 
-//import TinyRouter "github.com/go101/tinyrouter"
+//import TinyRouter "go101.org/tinyrouter"
 import HttpRouter "github.com/julienschmidt/httprouter"
 import GorillaMux "github.com/gorilla/mux"
 import TrieMux    "github.com/teambition/trie-mux/mux"

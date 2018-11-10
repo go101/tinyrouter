@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	tiny "github.com/go101/tinyrouter"
+	tiny "go101.org/tinyrouter"
 )
 
 func Example() {

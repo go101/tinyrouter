@@ -1,4 +1,4 @@
-module github.com/go101/tinyrouter
+module go101.org/tinyrouter
 
 require (
 	github.com/go-chi/chi v3.3.3+incompatible
