@@ -7,7 +7,7 @@ import "net/http/httptest"
 import "strings"
 import "testing"
 
-//import TinyRouter "go101.org/tinyrouter"
+import TinyRouter "go101.org/tinyrouter"
 import HttpRouter "github.com/julienschmidt/httprouter"
 import GorillaMux "github.com/gorilla/mux"
 import TrieMux    "github.com/teambition/trie-mux/mux"
@@ -159,7 +159,7 @@ func write65536bytes(w io.Writer) {
 
 func handlerTinyRouter(f func(io.Writer)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		params := /*TinyRouter.*/PathParams(req)
+		params := TinyRouter.PathParams(req)
 		_, _, _ = params.Value("param0"), params.Value("param1"), params.Value("param2")
 		w.WriteHeader(http.StatusOK)
 		f(w)
@@ -199,7 +199,7 @@ func handlerChiRouter(f func(io.Writer)) func(http.ResponseWriter, *http.Request
 
 
 
-var tinyRouter0, tinyRouter16, tinyRouter256, tinyRouter1024, tinyRouter8192, tinyRouter65536, tinyRouter0_b * /*TinyRouter.*/TinyRouter
+var tinyRouter0, tinyRouter16, tinyRouter256, tinyRouter1024, tinyRouter8192, tinyRouter65536, tinyRouter0_b * TinyRouter.TinyRouter
 var httpRouter0, httpRouter16, httpRouter256, httpRouter1024, httpRouter8192, httpRouter65536 *HttpRouter.Router
 var gorillaRouter0, gorillaRouter16, gorillaRouter256, gorillaRouter1024, gorillaRouter8192, gorillaRouter65536, gorillaRouter0_b *GorillaMux.Router
 var trieRouter0, trieRouter16, trieRouter256, trieRouter1024, trieRouter8192, trieRouter65536, trieRouter0_b *TrieMux.Mux
@@ -219,60 +219,60 @@ func init() {
 	}
 
 	// TinyRouter
-	tinyroutes0 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
-	tinyroutes16 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
-	tinyroutes256 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
-	tinyroutes1024 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
-	tinyroutes8192 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
-	tinyroutes65536 := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
+	tinyroutes0 := make([] TinyRouter.Route, 0, len(requestPatterns))
+	tinyroutes16 := make([] TinyRouter.Route, 0, len(requestPatterns))
+	tinyroutes256 := make([] TinyRouter.Route, 0, len(requestPatterns))
+	tinyroutes1024 := make([] TinyRouter.Route, 0, len(requestPatterns))
+	tinyroutes8192 := make([] TinyRouter.Route, 0, len(requestPatterns))
+	tinyroutes65536 := make([] TinyRouter.Route, 0, len(requestPatterns))
 	for _, pattern := range requestPatterns {
-		tinyroutes0 = append(tinyroutes0, /*TinyRouter.*/Route{
+		tinyroutes0 = append(tinyroutes0, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write0bytes),
 		})
-		tinyroutes16 = append(tinyroutes16, /*TinyRouter.*/Route{
+		tinyroutes16 = append(tinyroutes16, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write16bytes),
 		})
-		tinyroutes256 = append(tinyroutes256, /*TinyRouter.*/Route{
+		tinyroutes256 = append(tinyroutes256, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write256bytes),
 		})
-		tinyroutes1024 = append(tinyroutes1024, /*TinyRouter.*/Route{
+		tinyroutes1024 = append(tinyroutes1024, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write1024bytes),
 		})
-		tinyroutes8192 = append(tinyroutes8192, /*TinyRouter.*/Route{
+		tinyroutes8192 = append(tinyroutes8192, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write8192bytes),
 		})
-		tinyroutes65536 = append(tinyroutes65536, /*TinyRouter.*/Route{
+		tinyroutes65536 = append(tinyroutes65536, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write65536bytes),
 		})
 	}
-	tinyRouter0 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes0})
-	tinyRouter16 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes16})
-	tinyRouter256 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes256})
-	tinyRouter1024 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes1024})
-	tinyRouter8192 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes8192})
-	tinyRouter65536 = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes65536})
+	tinyRouter0 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes0})
+	tinyRouter16 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes16})
+	tinyRouter256 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes256})
+	tinyRouter1024 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes1024})
+	tinyRouter8192 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes8192})
+	tinyRouter65536 = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes65536})
 
-	tinyroutes0_b := make([] /*TinyRouter.*/Route, 0, len(requestPatterns))
+	tinyroutes0_b := make([] TinyRouter.Route, 0, len(requestPatterns))
 	for _, pattern := range requestPatterns_2 {
-		tinyroutes0_b = append(tinyroutes0_b, /*TinyRouter.*/Route{
+		tinyroutes0_b = append(tinyroutes0_b, TinyRouter.Route{
 			Method:     "GET",
 			Pattern:    pattern,
 			HandleFunc: handlerTinyRouter(write0bytes),
 		})
 	}
-	tinyRouter0_b = /*TinyRouter.*/New( /*TinyRouter.*/Config{Routes: tinyroutes0_b})
+	tinyRouter0_b = TinyRouter.New( TinyRouter.Config{Routes: tinyroutes0_b})
 
 	// HttpRouter
 	httpRouter0 = HttpRouter.New()
