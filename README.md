@@ -1,5 +1,4 @@
 
-**NOTE: please add a `replace go101.org/tinyrouter => github.com/go101/tinyrouter v1.0.0` line in the `go.mod` file of your project to use this package.**
 **NOTE**: if your project supports Go modules, then the import path of this package is "go101.org/tinyrouter",
 so please add the following lines in your project `go.mod` file to use this package:
 ```
