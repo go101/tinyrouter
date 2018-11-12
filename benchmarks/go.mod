@@ -10,7 +10,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
 	github.com/teambition/trie-mux v1.4.2
-	go101.org/tinyrouter v1.0.0
+	go101.org/tinyrouter v1.0.1
 )
 
-replace go101.org/tinyrouter => github.com/go101/tinyrouter v1.0.0
+replace go101.org/tinyrouter => github.com/go101/tinyrouter v1.0.1

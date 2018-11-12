@@ -56,13 +56,16 @@ for HttpRouter will panic on those flexible URL patterns.
 
 From the results, we can find that
 * (from the first group of benchmarks), HttpRouter performs best for pure router function.
+  (It is proved that the main reason TinyRouter and ChiRouter look slower than HttpRouter is they both support get path parameters from
+  request context but HttpRouter doesn't defaultly. When all the three packages use request context to return path parameters,
+  their performance differences are smaller than 20%.)
 * (from the middle groups of benchmarks), with more and more workload for a single request, the advantage of HttpRouter becomes smaller and smaller.
 
 ### Conclusions
 
 * If your server project needs a high URL pattern flexibility, select any route libraries used in the above benchmarks except HttpRouter.
 * If the average response size is large than 8k bytes, any router libraries used in the above benchmarks are capable.
-* If  the average response size is very small and you don't care about the URL pattern flexibility, HttpRouter may be the best choice.
+* If  the average response size is very small and you don't care about the URL pattern flexibility, HttpRouter may be the best choice.]
 
 ### Other Comparisons
 

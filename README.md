@@ -1,5 +1,5 @@
 
-**NOTE**: if your project supports Go modules, then the import path of this package is "go101.org/tinyrouter",
+**NOTE**: if your project supports Go modules, then the import path of this package is `go101.org/tinyrouter`,
 so please add the following lines in your project `go.mod` file to use this package:
 ```
 require go101.org/tinyrouter v1.0.1 // this line may be not needed any more since Go 1.12
@@ -201,6 +201,6 @@ in the process make the usual time complexity become to **_O(2k + N/m)_**.)
 For a project with 20 routes per method with a certain number of segments in path,
 **_N/m_** would be about 5, whcih is much smaller than **k**, which is about 16-64.
 So the usual time complexity of this algorithm is about two times of a radix implementation
-(see [the benchmarks](benchmark.md) for details).
+(see [the benchmarks](benchmarks/benchmark.md) for details).
 The benefit is there are less limits for the route patterns.
 
